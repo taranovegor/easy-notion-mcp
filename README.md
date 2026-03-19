@@ -94,11 +94,17 @@ Environment variables:
 
 **Getting a Notion token:** Create an integration at [notion.so/my-integrations](https://www.notion.so/my-integrations), copy the token, then share your target pages and databases with the integration.
 
+## Why this one
+
+Other Notion MCP servers pass raw Notion API JSON to agents — deeply nested block objects, rich text annotation arrays, property schemas with redundant metadata. Agents burn tokens parsing structure instead of doing work.
+
+This server speaks markdown. Agents already know markdown. There's nothing new to learn, no format to translate, no block objects to construct. The agent writes markdown, the server handles the conversion.
+
+This also means agents can **edit existing content**. Read a page, get markdown back, modify the string, write it back. With JSON-based servers, agents have to reconstruct block objects from scratch or manipulate deeply nested arrays — most give up and just overwrite.
+
 ## How it works
 
-You write markdown. We convert it to Notion's block API. You read pages back as markdown. The same syntax works in both directions.
-
-Create a page:
+**Pages** — write and read markdown:
 
 ```
 create_page({
@@ -111,10 +117,23 @@ Read it back — same markdown comes out:
 
 ```
 read_page({ page_id: "..." })
-→ { id: "...", title: "Sprint Review", markdown: "## Decisions\n\n- Ship v2 by Friday\n..." }
+→ { markdown: "## Decisions\n\n- Ship v2 by Friday\n- [ ] Update deploy scripts\n\n> [!WARNING]\n> Deploy window is Saturday 2–4am only" }
 ```
 
-Modify the markdown string, call `replace_content`, done. No format translation needed.
+Modify the string, call `replace_content`, done. Or target a single section by heading name with `update_section`. Or do a surgical `find_replace` without touching the rest of the page.
+
+**Databases** — write simple key-value pairs:
+
+```
+add_database_entry({
+  database_id: "...",
+  properties: { "Status": "Done", "Priority": "High", "Due": "2025-03-20", "Tags": ["v2", "launch"] }
+})
+```
+
+No property type objects, no nested `{ select: { name: "Done" } }` wrappers. The server fetches the database schema at runtime and converts automatically. Agents pass `{ "Status": "Done" }`, the server does the rest.
+
+**Errors tell you how to fix them.** A wrong heading name returns the available headings. A missing page suggests sharing it with the integration. A bad filter tells you to call `get_database` first. Agents can self-correct without asking the user for help.
 
 ## Tools reference
 
@@ -155,7 +174,7 @@ Modify the markdown string, call `replace_content`, done. No format translation 
 | `update_database_entry` | Update a row using simple key-value pairs |
 | `delete_database_entry` | Delete (archive) a database entry |
 
-Agents pass `{ "Status": "Done" }` — we handle the conversion to Notion's property format automatically.
+Agents pass `{ "Status": "Done" }` — the server fetches the database schema, maps values to Notion's property format, and handles type conversion automatically. Schema is cached for 5 minutes to avoid redundant API calls during batch operations.
 
 ### Comments
 
@@ -212,7 +231,9 @@ Agents pass `{ "Status": "Done" }` — we handle the conversion to Notion's prop
 
 ## Round-trip fidelity
 
-`read_page` output uses the exact same syntax that `create_page` and `replace_content` accept. Read a page, modify the markdown, write it back — nothing is lost. This is a design guarantee, not a side effect of the current implementation. The server is built around one markdown representation in both directions so agents can edit existing content without switching formats or reconstructing Notion blocks by hand.
+What you write is what you read back. `read_page` returns the exact same markdown syntax that `create_page` accepts — headings, lists, tables, callouts, toggles, columns, equations, all of it. This is a design guarantee, not a side effect.
+
+This means agents can read a page, modify the markdown string, and write it back without losing formatting, structure, or content. No format translation. No block reconstruction. Agents edit Notion pages the same way they edit code — as text.
 
 ## Configuration
 
@@ -224,9 +245,9 @@ Agents pass `{ "Status": "Done" }` — we handle the conversion to Notion's prop
 
 ## Security
 
-Responses from `read_page` include a content notice prefix telling the agent to treat the data as content, not instructions. This provides lightweight defense against prompt injection from Notion content. Set `NOTION_TRUST_CONTENT=true` to disable this if you trust your Notion workspace.
+**Prompt injection defense:** `read_page` responses include a content notice prefix instructing the agent to treat Notion data as content, not instructions. This prevents page content from hijacking agent behavior. Set `NOTION_TRUST_CONTENT=true` to disable this if you control the workspace.
 
-URLs in markdown input are validated — only `http:`, `https:`, and `mailto:` protocols are allowed. Unsafe URLs are rendered as plain text.
+**URL sanitization:** `javascript:`, `data:`, and other unsafe URL protocols are stripped and rendered as plain text. Only `http:`, `https:`, and `mailto:` are allowed.
 
 ## License
 
