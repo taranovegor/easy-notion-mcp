@@ -5,7 +5,7 @@
 **Markdown-first MCP server that connects AI agents to Notion.**<br>
 Agents write markdown — easy-notion-mcp converts it to Notion's block API and back again.
 
-26 tools · 25 block types · 90% fewer tokens vs official Notion MCP · Full round-trip fidelity
+26 tools · 25 block types · 92% fewer tokens vs official Notion MCP · Full round-trip fidelity
 
 [![npm](https://img.shields.io/npm/v/easy-notion-mcp)](https://www.npmjs.com/package/easy-notion-mcp)
 [![license](https://img.shields.io/npm/l/easy-notion-mcp)](LICENSE)
@@ -42,15 +42,15 @@ npx easy-notion-mcp
 
 | Operation | Official Notion MCP | better-notion-mcp | easy-notion-mcp |
 |---|---|---|---|
-| Page read | ~5,760 tokens | ~248 tokens† | **~308 tokens** |
-| Database query (5 rows) | ~2,325 tokens | ~759 tokens | **~365 tokens** |
-| Search (3 results) | ~1,201 tokens | ~340 tokens | **~298 tokens** |
-| **vs Official** | — | — | **~90% fewer tokens** |
-| **vs better-notion** | — | — | **~28% fewer tokens** |
+| Page read | 6,536 tokens | 236 tokens† | **291 tokens** |
+| Database query (5 rows) | 2,983 tokens | 704 tokens | **347 tokens** |
+| Search (3 results) | 1,824 tokens | 347 tokens | **298 tokens** |
+| **vs Official** | — | — | **~92% fewer tokens** |
+| **vs better-notion** | — | — | **~27% fewer tokens** |
 
-†better-notion-mcp page reads appear smaller because they silently drop 11 block types (callouts, toggles, tables, task lists, equations, bookmarks, embeds). On equal content coverage, easy-notion-mcp is ~15% more efficient.
+†better-notion-mcp page reads appear smaller because they silently drop 11 block types (callouts, toggles, tables, task lists, equations, bookmarks, embeds). On equal content coverage, easy-notion-mcp is more efficient.
 
-*Token counts measured with tiktoken cl100k_base encoding on equivalent operations against the same Notion content. The official Notion npm package returns unmodified API JSON. Notion's separate hosted remote MCP server (not the npm package) uses a different format and was not benchmarked.*
+*Measured by running all three servers against the same Notion content and counting tokens with tiktoken cl100k_base. Raw responses saved for verification. The official Notion npm package returns unmodified API JSON. Notion's separate hosted remote MCP server (not the npm package) uses a different format and was not benchmarked.*
 
 ## How do I set up easy-notion-mcp?
 
