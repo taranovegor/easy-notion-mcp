@@ -10,6 +10,7 @@ Agents write markdown — easy-notion-mcp converts it to Notion's block API and 
 [![npm](https://img.shields.io/npm/v/easy-notion-mcp)](https://www.npmjs.com/package/easy-notion-mcp)
 [![license](https://img.shields.io/npm/l/easy-notion-mcp)](LICENSE)
 [![node](https://img.shields.io/node/v/easy-notion-mcp)](package.json)
+[![Glama](https://glama.ai/mcp/servers/Grey-Iris/easy-notion-mcp/badges/card.svg)](https://glama.ai/mcp/servers/Grey-Iris/easy-notion-mcp)
 
 ```bash
 npx easy-notion-mcp
