@@ -5,7 +5,7 @@
 **Markdown-first MCP server that connects AI agents to Notion.**<br>
 Agents write markdown — easy-notion-mcp converts it to Notion's block API and back again.
 
-26 tools · 20+ block types · 87% token savings · Full round-trip fidelity
+26 tools · 25 block types · 90% fewer tokens vs official Notion MCP · Full round-trip fidelity
 
 [![npm](https://img.shields.io/npm/v/easy-notion-mcp)](https://www.npmjs.com/package/easy-notion-mcp)
 [![license](https://img.shields.io/npm/l/easy-notion-mcp)](LICENSE)
@@ -27,30 +27,30 @@ npx easy-notion-mcp
 
 ## How does easy-notion-mcp compare to other Notion MCP servers?
 
-Most Notion MCP servers pass raw Notion API JSON to agents — deeply nested block objects, rich text annotation arrays, and property schemas with redundant metadata. Agents burn thousands of tokens parsing structure instead of doing work. easy-notion-mcp is designed for agents that need to read and write rich Notion content with minimal token usage.
-
-| Feature | easy-notion-mcp | Typical Notion MCP servers |
-|---|---|---|
-| **Content format** | Standard markdown | Raw Notion API JSON |
-| **Token efficiency** | 87% reduction (measured) | Baseline — full JSON payloads |
-| **Tools** | 26 individually-named tools | Auto-generated or composite tools |
-| **Block types** | 20+ (toggles, columns, callouts, equations, embeds, tables, file uploads) | 2–5 basic types, or raw JSON for everything |
-| **Round-trip fidelity** | Yes — read markdown, modify, write back | No — format lost on round-trip |
-| **File uploads** | Yes (`file:///path`) | Rarely supported |
-| **Comments** | Yes (list + add) | Varies |
-| **Prompt injection defense** | Yes (content notice prefix + URL sanitization) | Rarely implemented |
-| **Database entry format** | Simple `{"Status": "Done"}` key-value pairs | Nested `{ select: { name: "Done" } }` objects |
-| **Auth options** | API token or OAuth | Varies |
+| Feature | easy-notion-mcp | Official Notion MCP (npm) | better-notion-mcp |
+|---|---|---|---|
+| **Content format** | Standard GFM markdown | Raw Notion API JSON | Markdown (limited block types) |
+| **Block types** | 25 (toggles, columns, callouts, equations, embeds, tables, file uploads, task lists) | All (as raw JSON) | ~7 (headings, paragraphs, lists, code, quotes, dividers) |
+| **Round-trip fidelity** | Yes — read markdown, modify, write back | No — raw JSON requires block reconstruction | Partial — unsupported blocks silently dropped |
+| **Tools** | 26 individually-named tools | 18 auto-generated from OpenAPI | 9 composite tools (39 actions) |
+| **File uploads** | Yes (`file:///path`) | No ([open feature request](https://github.com/makenotion/notion-mcp-server/issues/191)) | Yes (5-step lifecycle) |
+| **Prompt injection defense** | Yes (content notice prefix + URL sanitization) | No | No |
+| **Database entry format** | Simple `{"Status": "Done"}` key-value pairs | Simplified key-value pairs | Simplified key-value pairs |
+| **Auth options** | API token or OAuth | API token or OAuth | API token or OAuth |
 
 ### How many tokens does easy-notion-mcp save?
 
-| Operation | Typical Notion MCP servers | easy-notion-mcp | Savings |
+| Operation | Official Notion MCP | better-notion-mcp | easy-notion-mcp |
 |---|---|---|---|
-| Page read | ~4,300 tokens | ~290 tokens | **93%** |
-| Database query | ~2,500 tokens | ~320 tokens | **87%** |
-| Search | ~1,580 tokens | ~370 tokens | **76%** |
+| Page read | ~5,760 tokens | ~248 tokens† | **~308 tokens** |
+| Database query (5 rows) | ~2,325 tokens | ~759 tokens | **~365 tokens** |
+| Search (3 results) | ~1,201 tokens | ~340 tokens | **~298 tokens** |
+| **vs Official** | — | — | **~90% fewer tokens** |
+| **vs better-notion** | — | — | **~28% fewer tokens** |
 
-*Token counts measured with tiktoken cl100k_base encoding on equivalent operations. "Typical Notion MCP servers" refers to servers that return raw Notion API JSON.*
+†better-notion-mcp page reads appear smaller because they silently drop 11 block types (callouts, toggles, tables, task lists, equations, bookmarks, embeds). On equal content coverage, easy-notion-mcp is ~15% more efficient.
+
+*Token counts measured with tiktoken cl100k_base encoding on equivalent operations against the same Notion content. The official Notion npm package returns unmodified API JSON. Notion's separate hosted remote MCP server (not the npm package) uses a different format and was not benchmarked.*
 
 ## How do I set up easy-notion-mcp?
 
@@ -177,11 +177,11 @@ easy-notion-mcp works with any MCP-compatible client. The server runs via stdio 
 
 ## Why markdown-first?
 
-Other Notion MCP servers pass raw Notion API JSON to agents — deeply nested block objects, rich text annotation arrays, property schemas with redundant metadata. Agents burn tokens parsing structure instead of doing work.
+The official Notion MCP npm package returns raw API JSON — deeply nested block objects with ~120 tokens of metadata per block. Other servers convert to markdown but support only a handful of block types, silently dropping callouts, toggles, tables, equations, and more.
 
-easy-notion-mcp speaks markdown. Agents already know markdown. There's nothing new to learn, no format to translate, no block objects to construct. The agent writes markdown, easy-notion-mcp handles the conversion to Notion's block API.
+easy-notion-mcp uses standard GFM markdown that agents already know. There's nothing new to learn, no custom tag syntax, no block objects to construct. The agent writes markdown, easy-notion-mcp handles the conversion to Notion's block API — and back again, with 25 block types preserved.
 
-easy-notion-mcp also means agents can **edit existing content**. Read a page, get markdown back, modify the string, write it back. With JSON-based servers, agents have to reconstruct block objects from scratch or manipulate deeply nested arrays — most give up and just overwrite.
+This means agents can **edit existing content**. Read a page, get markdown back, modify the string, write it back. Nothing is lost. Agents edit Notion pages the same way they edit code — as text.
 
 ## How does easy-notion-mcp work?
 
@@ -379,7 +379,7 @@ easy-notion-mcp includes two layers of security for production deployments:
 
 ### How is easy-notion-mcp different from the official Notion MCP server?
 
-easy-notion-mcp uses standard markdown as its content format. The official Notion MCP server passes raw Notion API JSON — deeply nested block objects that burn thousands of tokens and force agents to construct complex data structures. easy-notion-mcp saves 87% of tokens, supports 20+ block types (including toggles, columns, and callouts that the official server marks as unsupported), and guarantees round-trip fidelity so agents can read, modify, and rewrite pages without format loss.
+The official Notion MCP npm package (`@notionhq/notion-mcp-server`) is a raw API proxy — it returns unmodified Notion JSON, costing ~90% more tokens per operation. easy-notion-mcp converts everything to standard GFM markdown that agents already know, supports 25 block types with round-trip fidelity, and includes prompt injection defense. Notion also offers a separate hosted remote MCP server (OAuth-based) that uses a custom HTML-tag-based markdown format — easy-notion-mcp uses standard markdown syntax instead.
 
 ### What MCP clients does easy-notion-mcp work with?
 
