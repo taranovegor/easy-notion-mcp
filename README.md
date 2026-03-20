@@ -31,10 +31,10 @@ npx easy-notion-mcp
 |---|---|---|---|
 | **Content format** | Standard GFM markdown | Raw Notion API JSON | Markdown (limited block types) |
 | **Block types** | 25 (toggles, columns, callouts, equations, embeds, tables, file uploads, task lists) | All (as raw JSON) | ~7 (headings, paragraphs, lists, code, quotes, dividers) |
-| **Round-trip fidelity** | Yes — read markdown, modify, write back | No — raw JSON requires block reconstruction | Partial — unsupported blocks silently dropped |
+| **Round-trip fidelity** | Full — read markdown, modify, write back | No — raw JSON requires block reconstruction | Partial — unsupported blocks silently dropped |
 | **Tools** | 26 individually-named tools | 18 auto-generated from OpenAPI | 9 composite tools (39 actions) |
-| **File uploads** | Yes (`file:///path`) | No ([open feature request](https://github.com/makenotion/notion-mcp-server/issues/191)) | Yes (5-step lifecycle) |
-| **Prompt injection defense** | Yes (content notice prefix + URL sanitization) | No | No |
+| **File uploads** | `file:///path` in markdown | No ([open feature request](https://github.com/makenotion/notion-mcp-server/issues/191)) | Yes (5-step lifecycle) |
+| **Prompt injection defense** | Content notice prefix + URL sanitization | No | No |
 | **Database entry format** | Simple `{"Status": "Done"}` key-value pairs | Simplified key-value pairs | Simplified key-value pairs |
 | **Auth options** | API token or OAuth | API token or OAuth | API token or OAuth |
 
@@ -66,15 +66,22 @@ npx easy-notion-mcp-http
 
 Requires `NOTION_OAUTH_CLIENT_ID` and `NOTION_OAUTH_CLIENT_SECRET` env vars. See [OAuth setup](#oauth--http-transport) below.
 
-**Connect from Claude Code:**
+**Claude Code:**
 
 ```bash
 claude mcp add notion --transport http http://localhost:3333/mcp
 ```
 
-**Connect from Claude Desktop:**
+**OpenClaw:**
 
-Go to Settings > Connectors > Add custom connector, enter `http://localhost:3333/mcp`.
+```bash
+openclaw config set mcpServers.notion.transport "http"
+openclaw config set mcpServers.notion.url "http://localhost:3333/mcp"
+```
+
+**Claude Desktop:**
+
+Go to Settings → Connectors → Add custom connector, enter `http://localhost:3333/mcp`.
 
 Your browser will open to Notion's authorization page. Pick the pages to share, click Allow, done.
 
@@ -90,7 +97,16 @@ claude mcp add notion -- npx -y easy-notion-mcp
 
 Set the env var: `export NOTION_TOKEN=ntn_your_integration_token`
 
-**Claude Desktop** — add to `claude_desktop_config.json`:
+**OpenClaw:**
+
+```bash
+openclaw config set mcpServers.notion.command "npx"
+openclaw config set mcpServers.notion.args '["easy-notion-mcp"]'
+```
+
+Set the env var: `export NOTION_TOKEN=ntn_your_integration_token`
+
+<details><summary><strong>Claude Desktop</strong> — add to <code>claude_desktop_config.json</code></summary>
 
 ```json
 {
@@ -105,6 +121,8 @@ Set the env var: `export NOTION_TOKEN=ntn_your_integration_token`
   }
 }
 ```
+
+</details>
 
 <details><summary><strong>Cursor</strong> — add to <code>.cursor/mcp.json</code></summary>
 
@@ -157,17 +175,6 @@ Set the env var: `export NOTION_TOKEN=ntn_your_integration_token`
   }
 }
 ```
-
-</details>
-
-<details><summary><strong>OpenClaw</strong></summary>
-
-```bash
-openclaw config set mcpServers.notion.command "npx"
-openclaw config set mcpServers.notion.args '["easy-notion-mcp"]'
-```
-
-Set the env var: `export NOTION_TOKEN=ntn_your_integration_token`
 
 </details>
 
