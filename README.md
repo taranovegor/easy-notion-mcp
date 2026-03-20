@@ -1,14 +1,29 @@
+<div align="center">
+
 # easy-notion-mcp
 
-**easy-notion-mcp is a markdown-first MCP server that connects AI agents to Notion.** It provides 26 tools for reading, writing, searching, and managing Notion pages and databases using standard markdown instead of raw JSON. easy-notion-mcp saves 87% of tokens on every operation and supports 20+ block types with full round-trip fidelity — agents read markdown out and write markdown back with zero format loss.
+**Markdown-first MCP server that connects AI agents to Notion.**<br>
+Agents write markdown — easy-notion-mcp converts it to Notion's block API and back again.
+
+26 tools · 20+ block types · 87% token savings · Full round-trip fidelity
 
 [![npm](https://img.shields.io/npm/v/easy-notion-mcp)](https://www.npmjs.com/package/easy-notion-mcp)
 [![license](https://img.shields.io/npm/l/easy-notion-mcp)](LICENSE)
 [![node](https://img.shields.io/node/v/easy-notion-mcp)](package.json)
 
+```bash
+npx easy-notion-mcp
+```
+
+**[See it in action →](https://www.notion.so/easy-notion-mcp-327be876242f817f9129ff1a5a624814)** Live Notion page created and managed entirely through easy-notion-mcp.
+
+</div>
+
 ![Raw JSON chaos vs clean markdown](assets/readme-banner.png)
 
-**[See the demo page](https://www.notion.so/easy-notion-mcp-327be876242f817f9129ff1a5a624814)** — a live Notion page created and managed entirely through easy-notion-mcp.
+---
+
+**Contents:** [Comparison](#how-does-easy-notion-mcp-compare-to-other-notion-mcp-servers) · [Setup](#how-do-i-set-up-easy-notion-mcp) · [Why markdown](#why-markdown-first) · [How it works](#how-does-easy-notion-mcp-work) · [Tools](#what-tools-does-easy-notion-mcp-provide) · [Block types](#what-block-types-does-easy-notion-mcp-support) · [Round-trip](#can-i-read-and-rewrite-pages-without-losing-formatting) · [Databases](#how-does-easy-notion-mcp-handle-databases) · [Config](#configuration) · [Security](#what-about-security-and-prompt-injection) · [FAQ](#frequently-asked-questions)
 
 ## How does easy-notion-mcp compare to other Notion MCP servers?
 
@@ -91,7 +106,7 @@ Set the env var: `export NOTION_TOKEN=ntn_your_integration_token`
 }
 ```
 
-**Cursor** — add to `.cursor/mcp.json`:
+<details><summary><strong>Cursor</strong> — add to <code>.cursor/mcp.json</code></summary>
 
 ```json
 {
@@ -107,7 +122,9 @@ Set the env var: `export NOTION_TOKEN=ntn_your_integration_token`
 }
 ```
 
-**VS Code Copilot** — add to `.vscode/mcp.json`:
+</details>
+
+<details><summary><strong>VS Code Copilot</strong> — add to <code>.vscode/mcp.json</code></summary>
 
 ```json
 {
@@ -123,7 +140,9 @@ Set the env var: `export NOTION_TOKEN=ntn_your_integration_token`
 }
 ```
 
-**Windsurf** — add to `~/.windsurf/mcp.json`:
+</details>
+
+<details><summary><strong>Windsurf</strong> — add to <code>~/.windsurf/mcp.json</code></summary>
 
 ```json
 {
@@ -139,7 +158,9 @@ Set the env var: `export NOTION_TOKEN=ntn_your_integration_token`
 }
 ```
 
-**OpenClaw** — add to `openclaw.json`:
+</details>
+
+<details><summary><strong>OpenClaw</strong></summary>
 
 ```bash
 openclaw config set mcpServers.notion.command "npx"
@@ -148,7 +169,11 @@ openclaw config set mcpServers.notion.args '["easy-notion-mcp"]'
 
 Set the env var: `export NOTION_TOKEN=ntn_your_integration_token`
 
+</details>
+
 easy-notion-mcp works with any MCP-compatible client. The server runs via stdio (API token mode) or HTTP (OAuth mode).
+
+![](assets/papercraft-divider.png)
 
 ## Why markdown-first?
 
@@ -162,7 +187,7 @@ easy-notion-mcp also means agents can **edit existing content**. Read a page, ge
 
 **Pages** — write and read markdown:
 
-```
+```javascript
 create_page({
   title: "Sprint Review",
   markdown: "## Decisions\n\n- Ship v2 by Friday\n- [ ] Update deploy scripts\n\n> [!WARNING]\n> Deploy window is Saturday 2–4am only"
@@ -171,16 +196,16 @@ create_page({
 
 Read it back — same markdown comes out:
 
-```
+```javascript
 read_page({ page_id: "..." })
-→ { markdown: "## Decisions\n\n- Ship v2 by Friday\n- [ ] Update deploy scripts\n\n> [!WARNING]\n> Deploy window is Saturday 2–4am only" }
+// → { markdown: "## Decisions\n\n- Ship v2 by Friday\n- [ ] Update deploy scripts\n\n> [!WARNING]\n> Deploy window is Saturday 2–4am only" }
 ```
 
 Modify the string, call `replace_content`, done. Or target a single section by heading name with `update_section`. Or do a surgical `find_replace` without touching the rest of the page.
 
 **Databases** — write simple key-value pairs:
 
-```
+```javascript
 add_database_entry({
   database_id: "...",
   properties: { "Status": "Done", "Priority": "High", "Due": "2025-03-20", "Tags": ["v2", "launch"] }
@@ -192,6 +217,8 @@ No property type objects, no nested `{ select: { name: "Done" } }` wrappers. eas
 **Errors tell you how to fix them.** A wrong heading name returns the available headings. A missing page suggests sharing it with the integration. A bad filter tells you to call `get_database` first. Agents can self-correct without asking the user for help.
 
 **Complex content works.** Nested toggles inside toggles, columns with mixed content types (lists + code blocks + blockquotes), deep list nesting, and full unicode (Japanese, Chinese, Arabic, emoji) all round-trip cleanly. `update_section` heading search is case-insensitive and returns available headings on miss. `add_database_entries` handles partial failures — succeeded and failed entries are returned separately so agents can retry just the failures.
+
+![](assets/papercraft-divider.png)
 
 ## What tools does easy-notion-mcp provide?
 
@@ -346,27 +373,17 @@ easy-notion-mcp includes two layers of security for production deployments:
 
 **URL sanitization:** `javascript:`, `data:`, and other unsafe URL protocols are stripped and rendered as plain text. Only `http:`, `https:`, and `mailto:` are allowed.
 
+![](assets/papercraft-divider.png)
+
 ## Frequently Asked Questions
 
 ### How is easy-notion-mcp different from the official Notion MCP server?
 
 easy-notion-mcp uses standard markdown as its content format. The official Notion MCP server passes raw Notion API JSON — deeply nested block objects that burn thousands of tokens and force agents to construct complex data structures. easy-notion-mcp saves 87% of tokens, supports 20+ block types (including toggles, columns, and callouts that the official server marks as unsupported), and guarantees round-trip fidelity so agents can read, modify, and rewrite pages without format loss.
 
-### Does easy-notion-mcp work with Claude Desktop?
+### What MCP clients does easy-notion-mcp work with?
 
-Yes. Add the easy-notion-mcp configuration to `claude_desktop_config.json` with your Notion API token. easy-notion-mcp works with Claude Desktop in both stdio mode (API token) and HTTP mode (OAuth). See the [setup instructions](#how-do-i-set-up-easy-notion-mcp) for the copy-pasteable config.
-
-### Does easy-notion-mcp work with Cursor?
-
-Yes. Add the easy-notion-mcp configuration to `.cursor/mcp.json`. easy-notion-mcp's 26 individually-named tools are fully compatible with Cursor's MCP integration. See the [setup instructions](#how-do-i-set-up-easy-notion-mcp) for the copy-pasteable config.
-
-### Does easy-notion-mcp work with OpenClaw?
-
-Yes. easy-notion-mcp works with OpenClaw's native MCP server support. Add it to `openclaw.json` using `openclaw config set` commands. easy-notion-mcp's markdown-first approach is especially valuable for OpenClaw agents, which commonly struggle to construct raw Notion block JSON. See the [setup instructions](#how-do-i-set-up-easy-notion-mcp) for the copy-pasteable config.
-
-### Does easy-notion-mcp work with Windsurf?
-
-Yes. Add the easy-notion-mcp configuration to `~/.windsurf/mcp.json`. See the [setup instructions](#how-do-i-set-up-easy-notion-mcp) for the copy-pasteable config.
+easy-notion-mcp works with any MCP-compatible client, including Claude Desktop, Claude Code, Cursor, VS Code Copilot, Windsurf, and OpenClaw. It supports both stdio transport (API token) and HTTP transport (OAuth). See the [setup instructions](#how-do-i-set-up-easy-notion-mcp) for copy-pasteable configs for each client.
 
 ### Does easy-notion-mcp support file uploads?
 
@@ -379,6 +396,10 @@ Yes. Nested toggles inside toggles, columns with mixed content types (lists, blo
 ### Does easy-notion-mcp handle partial failures in batch operations?
 
 Yes. `add_database_entries` returns separate `succeeded` and `failed` arrays. If one entry fails validation, the others still get created. Agents can retry just the failures without re-sending the whole batch.
+
+## Contributing
+
+Issues and PRs welcome on [GitHub](https://github.com/Grey-Iris/easy-notion-mcp).
 
 ## License
 
