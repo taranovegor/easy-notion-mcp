@@ -52,10 +52,16 @@
 
       * { margin: 0; padding: 0; box-sizing: border-box; }
 
+      html {
+        display: flex;
+        justify-content: center;
+        min-height: 100vh;
+        background: var(--page-bg);
+      }
+
       body {
         width: 1080px;
-        height: 1920px;
-        overflow: hidden;
+        min-height: 100vh;
         background: var(--page-bg);
         font-family: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
         color: #cdd6f4;
@@ -65,7 +71,7 @@
       /* ── Background gradient ── */
       body::before {
         content: "";
-        position: absolute;
+        position: fixed;
         inset: 0;
         background:
           radial-gradient(ellipse 700px 600px at 10% 20%, rgba(99, 102, 241, 0.12), transparent),
@@ -79,7 +85,7 @@
       /* ── Subtle noise ── */
       body::after {
         content: "";
-        position: absolute;
+        position: fixed;
         inset: 0;
         background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
         background-size: 200px 200px;
@@ -92,7 +98,6 @@
         z-index: 1;
         display: flex;
         flex-direction: column;
-        height: 100%;
         padding: 56px 44px 48px;
       }
 
@@ -159,8 +164,6 @@
       .panels {
         display: flex;
         gap: 20px;
-        flex: 1;
-        min-height: 0;
         opacity: 0;
         animation: fadeUp 0.7s ease-out 0.4s forwards;
       }
@@ -249,42 +252,8 @@
 
       /* Code area */
       .code-body {
-        flex: 1;
-        overflow: hidden;
         position: relative;
         padding: 18px 0;
-      }
-
-      /* Official panel: overflow fade + "continues" label */
-      .mac-window.json-win .code-body::after {
-        content: "";
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 140px;
-        background: linear-gradient(to bottom, transparent, var(--win-bg) 80%);
-        pointer-events: none;
-        z-index: 2;
-      }
-
-      .mac-window.json-win .code-body::before {
-        content: "· · ·  67 lines  · · ·";
-        position: absolute;
-        bottom: 14px;
-        left: 50%;
-        transform: translateX(-50%);
-        font-family: "JetBrains Mono", monospace;
-        font-size: 11px;
-        color: #585b70;
-        z-index: 3;
-        letter-spacing: 0.06em;
-      }
-
-      /* easy panel: vertically center the short code */
-      .mac-window.md-win .code-body {
-        display: flex;
-        align-items: center;
       }
 
       /* Glow accent on easy panel */
