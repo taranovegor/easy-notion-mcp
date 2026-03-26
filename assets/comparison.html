@@ -32,7 +32,8 @@
         --coral-deep: #d4604a;
         --mint: #4db8a4;
         --teal: #2d8a9c;
-        --page-bg: #0c0c14;
+        --teal-dark: #1d6e7e;
+        --page-bg: #f8f9fb;
       }
 
       * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -48,29 +49,30 @@
         width: 1080px;
         background: var(--page-bg);
         font-family: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
-        color: #cdd6f4;
+        color: #1a2b3c;
         position: relative;
       }
 
-      /* Background gradient (fixed) */
+      /* Warm gradient wash */
       body::before {
         content: "";
         position: fixed;
         inset: 0;
         background:
-          radial-gradient(ellipse 600px 500px at 15% 20%, rgba(232, 120, 90, 0.08), transparent),
-          radial-gradient(ellipse 500px 400px at 85% 30%, rgba(77, 184, 164, 0.07), transparent),
-          radial-gradient(ellipse 700px 500px at 50% 80%, rgba(99, 102, 241, 0.05), transparent);
+          radial-gradient(ellipse 800px 600px at 10% 15%, rgba(232, 120, 90, 0.12), transparent),
+          radial-gradient(ellipse 600px 500px at 90% 20%, rgba(45, 138, 156, 0.10), transparent),
+          radial-gradient(ellipse 900px 600px at 50% 75%, rgba(99, 102, 241, 0.07), transparent),
+          radial-gradient(ellipse at 50% 50%, #f8f9fb, #f0f2f6);
         pointer-events: none;
         z-index: 0;
       }
 
-      /* Noise */
+      /* Subtle paper texture */
       body::after {
         content: "";
         position: fixed;
         inset: 0;
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.018'/%3E%3C/svg%3E");
         background-size: 200px 200px;
         pointer-events: none;
         z-index: 100;
@@ -93,7 +95,7 @@
         font-weight: 900;
         letter-spacing: -0.04em;
         line-height: 1.1;
-        color: #fff;
+        color: #1a2b3c;
       }
 
       .header h1 .highlight {
@@ -104,12 +106,12 @@
         margin-top: 10px;
         font-size: 16px;
         font-weight: 600;
-        color: #585b70;
+        color: #7a8a98;
       }
 
       .header .sub em {
         font-style: normal;
-        color: #7f849c;
+        color: #4a5a68;
       }
 
       /* ── Side-by-side panels — asymmetric ── */
@@ -124,8 +126,11 @@
         border-radius: 12px;
         overflow: hidden;
         background: var(--win-bg);
-        border: 1px solid var(--win-border);
-        box-shadow: 0 25px 80px rgba(0, 0, 0, 0.45), 0 8px 24px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        box-shadow:
+          0 4px 6px rgba(0, 0, 0, 0.04),
+          0 12px 28px rgba(0, 0, 0, 0.12),
+          0 40px 80px rgba(0, 0, 0, 0.16);
       }
 
       .title-bar {
@@ -310,8 +315,9 @@
         text-align: center;
         padding: 28px 20px;
         border-radius: 12px;
-        background: var(--win-bg);
-        border: 1px solid var(--win-border);
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
       }
 
       .reduction .big {
@@ -319,15 +325,14 @@
         font-size: 52px;
         font-weight: 800;
         letter-spacing: -0.05em;
-        color: var(--mint);
+        color: var(--teal-dark);
         line-height: 1;
-        text-shadow: 0 0 50px rgba(77, 184, 164, 0.25);
       }
 
       .reduction .context {
         font-size: 15px;
         font-weight: 700;
-        color: #45475a;
+        color: #8a96a2;
         margin-top: 6px;
       }
 
@@ -335,20 +340,21 @@
         text-align: center;
         padding: 20px;
         border-radius: 12px;
-        background: var(--win-bg);
-        border: 1px solid var(--win-border);
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
       }
 
       .brand-card .name {
         font-family: "JetBrains Mono", monospace;
         font-size: 17px;
         font-weight: 700;
-        color: var(--mint);
+        color: var(--teal-dark);
       }
 
       .brand-card .tagline {
         font-size: 13px;
-        color: #45475a;
+        color: #8a96a2;
         margin-top: 3px;
         font-weight: 600;
       }
