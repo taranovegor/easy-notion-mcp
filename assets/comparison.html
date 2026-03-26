@@ -3,51 +3,36 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=1080, initial-scale=1.0" />
-    <title>Same page. Different syntax.</title>
+    <title>Stop paying LLMs to write Notion JSON</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;0,9..40,800;0,9..40,900&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700;9..40,800;9..40,900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <style>
       :root {
-        /* Brand palette (from twitter cards) */
-        --navy: #1a2b3c;
-        --teal: #2d8a9c;
-        --teal-dark: #1d6e7e;
-        --mint: #4db8a4;
-        --coral: #e8785a;
-        --coral-deep: #d4604a;
-
-        /* Window chrome */
         --win-bg: #1e1e2e;
         --win-bar: #2a2a3e;
         --win-border: rgba(255, 255, 255, 0.08);
-        --win-shadow: 0 25px 80px rgba(0, 0, 0, 0.45), 0 8px 24px rgba(0, 0, 0, 0.3);
-
-        /* Traffic lights */
         --dot-red: #ff5f57;
         --dot-yellow: #febc2e;
         --dot-green: #28c840;
-
-        /* JSON syntax (muted reds — this is the "bad" side) */
         --j-key: #89b4fa;
         --j-string: #f38ba8;
         --j-bool: #fab387;
         --j-punct: #45475a;
-        --j-text: #a6adc8;
-
-        /* Markdown syntax (warm greens/teals — this is the "good" side) */
         --m-heading: #89dceb;
         --m-bold: #f9e2af;
         --m-bullet: #cba6f7;
         --m-callout: #a6e3a1;
         --m-text: #cdd6f4;
         --m-dim: #6c7086;
-
-        /* Page bg */
-        --page-bg: #11111b;
+        --coral: #e8785a;
+        --coral-deep: #d4604a;
+        --mint: #4db8a4;
+        --teal: #2d8a9c;
+        --page-bg: #0c0c14;
       }
 
       * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -61,135 +46,176 @@
 
       body {
         width: 1080px;
-        min-height: 100vh;
+        min-height: 1920px;
         background: var(--page-bg);
         font-family: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
         color: #cdd6f4;
         position: relative;
+        overflow: hidden;
       }
 
-      /* ── Background gradient ── */
-      body::before {
-        content: "";
-        position: fixed;
+      /* ── JSON wall — the entire background ── */
+      .json-wall {
+        position: absolute;
         inset: 0;
-        background:
-          radial-gradient(ellipse 700px 600px at 10% 20%, rgba(99, 102, 241, 0.12), transparent),
-          radial-gradient(ellipse 600px 500px at 90% 15%, rgba(232, 120, 90, 0.10), transparent),
-          radial-gradient(ellipse 800px 600px at 50% 70%, rgba(45, 138, 156, 0.10), transparent),
-          radial-gradient(ellipse 500px 400px at 70% 90%, rgba(168, 85, 247, 0.06), transparent);
-        pointer-events: none;
+        padding: 20px 28px;
+        overflow: hidden;
+        opacity: 0.28;
         z-index: 0;
       }
 
-      /* ── Subtle noise ── */
-      body::after {
-        content: "";
-        position: fixed;
-        inset: 0;
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
-        background-size: 200px 200px;
-        pointer-events: none;
-        z-index: 100;
+      .json-wall code {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        line-height: 1.65;
+        display: block;
+        white-space: pre;
+        color: #585b70;
       }
 
-      .container {
-        position: relative;
+      .json-wall .jk { color: rgba(137, 180, 250, 0.5); }
+      .json-wall .js { color: rgba(243, 139, 168, 0.4); }
+      .json-wall .jb { color: rgba(250, 179, 135, 0.4); }
+      .json-wall .jp { color: rgba(69, 71, 90, 0.6); }
+
+      /* Vignette over the JSON wall */
+      .vignette {
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(ellipse 120% 80% at 50% 45%, transparent 30%, var(--page-bg) 75%);
         z-index: 1;
+        pointer-events: none;
+      }
+
+      /* Extra darkening at edges */
+      .vignette::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(to bottom, var(--page-bg), transparent 15%, transparent 85%, var(--page-bg));
+        pointer-events: none;
+      }
+
+      /* ── Gradient color wash ── */
+      .color-wash {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+        background:
+          radial-gradient(ellipse 500px 400px at 20% 15%, rgba(232, 120, 90, 0.10), transparent),
+          radial-gradient(ellipse 400px 350px at 80% 80%, rgba(99, 102, 241, 0.08), transparent);
+      }
+
+      /* ── Content layer ── */
+      .content {
+        position: relative;
+        z-index: 2;
         display: flex;
         flex-direction: column;
-        padding: 56px 44px 48px;
+        align-items: center;
+        min-height: 1920px;
+        padding: 80px 44px 60px;
       }
 
-      /* ── Header ── */
-      .header {
+      /* ── Headline ── */
+      .headline {
         text-align: center;
-        margin-bottom: 44px;
+        margin-bottom: 48px;
         opacity: 0;
         animation: fadeUp 0.7s ease-out 0.15s forwards;
       }
 
-      .overline {
-        font-size: 14px;
-        font-weight: 700;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-        color: var(--teal);
-        margin-bottom: 14px;
-      }
-
-      h1 {
-        font-size: 54px;
+      .headline h1 {
+        font-size: 52px;
         font-weight: 900;
         letter-spacing: -0.04em;
-        line-height: 1.08;
+        line-height: 1.1;
         color: #ffffff;
       }
 
-      h1 .accent {
-        background: linear-gradient(135deg, var(--teal) 20%, var(--mint) 80%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+      .headline h1 .highlight {
+        color: var(--coral);
       }
 
-      .versus {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 16px;
-        margin-top: 22px;
-        font-size: 16px;
-        font-weight: 700;
-      }
-
-      .versus .left { color: rgba(243, 139, 168, 0.8); }
-      .versus .right { color: var(--mint); }
-      .versus .vs-dot {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: var(--win-bar);
-        border: 1px solid var(--win-border);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 11px;
-        font-weight: 800;
+      .headline .sub {
+        margin-top: 14px;
+        font-size: 18px;
+        font-weight: 600;
         color: #6c7086;
-        letter-spacing: 0.04em;
       }
 
-      /* ── Panel wrapper ── */
-      .panels {
-        display: flex;
-        gap: 20px;
+      .headline .sub em {
+        font-style: normal;
+        color: #9ca0b0;
+      }
+
+      /* ── The red "waste" badge over the JSON wall ── */
+      .waste-badge {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 10px;
+        padding: 16px 32px;
+        border-radius: 14px;
+        background: rgba(232, 120, 90, 0.12);
+        border: 1.5px solid rgba(232, 120, 90, 0.25);
+        margin-bottom: 40px;
         opacity: 0;
-        animation: fadeUp 0.7s ease-out 0.4s forwards;
+        animation: fadeUp 0.6s ease-out 0.35s forwards;
       }
 
-      /* ── macOS-style window ── */
-      .mac-window {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        border-radius: 12px;
+      .waste-badge .number {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 48px;
+        font-weight: 800;
+        color: var(--coral);
+        letter-spacing: -0.04em;
+      }
+
+      .waste-badge .label {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--coral-deep);
+        letter-spacing: 0.02em;
+      }
+
+      /* ── The floating markdown card ── */
+      .md-card {
+        width: 680px;
+        border-radius: 16px;
         overflow: hidden;
         background: var(--win-bg);
-        border: 1px solid var(--win-border);
-        box-shadow: var(--win-shadow);
+        border: 1px solid rgba(77, 184, 164, 0.15);
+        box-shadow:
+          0 0 0 1px rgba(77, 184, 164, 0.08),
+          0 30px 100px -10px rgba(0, 0, 0, 0.7),
+          0 0 80px -20px rgba(77, 184, 164, 0.15);
+        opacity: 0;
+        animation: cardSlam 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
         position: relative;
       }
 
-      /* Title bar */
-      .title-bar {
+      /* Green glow line on top */
+      .md-card::before {
+        content: "";
+        position: absolute;
+        top: -1px;
+        left: 15%;
+        right: 15%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--mint), transparent);
+        z-index: 5;
+      }
+
+      .md-card .title-bar {
         display: flex;
         align-items: center;
         height: 44px;
         padding: 0 16px;
         background: var(--win-bar);
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        flex-shrink: 0;
       }
 
       .dots {
@@ -204,9 +230,9 @@
         border-radius: 50%;
       }
 
-      .dots .d-r { background: var(--dot-red); }
-      .dots .d-y { background: var(--dot-yellow); }
-      .dots .d-g { background: var(--dot-green); }
+      .d-r { background: var(--dot-red); }
+      .d-y { background: var(--dot-yellow); }
+      .d-g { background: var(--dot-green); }
 
       .title-bar .filename {
         font-family: "JetBrains Mono", monospace;
@@ -215,99 +241,55 @@
         color: #6c7086;
         flex: 1;
         text-align: center;
-        margin-right: 52px; /* offset for dots width to truly center */
+        margin-right: 52px;
       }
 
-      /* Token count — big and unmissable */
-      .token-count {
-        padding: 12px 16px;
+      /* Green token badge inside card */
+      .md-card .token-row {
+        padding: 14px 24px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-        background: rgba(0, 0, 0, 0.15);
+        background: rgba(77, 184, 164, 0.06);
         display: flex;
         align-items: baseline;
-        gap: 8px;
+        gap: 10px;
       }
 
-      .token-count .number {
+      .md-card .token-row .number {
         font-family: "JetBrains Mono", monospace;
-        font-size: 32px;
-        font-weight: 700;
-        letter-spacing: -0.03em;
-      }
-
-      .token-count .unit {
-        font-family: "JetBrains Mono", monospace;
-        font-size: 14px;
-        font-weight: 600;
-        opacity: 0.5;
-      }
-
-      .mac-window.json-win .token-count .number {
-        color: var(--coral);
-      }
-
-      .mac-window.md-win .token-count .number {
+        font-size: 40px;
+        font-weight: 800;
         color: var(--mint);
+        letter-spacing: -0.04em;
       }
 
-      /* Code area */
-      .code-body {
-        position: relative;
-        padding: 18px 0;
+      .md-card .token-row .label {
+        font-size: 16px;
+        font-weight: 700;
+        color: rgba(77, 184, 164, 0.6);
       }
 
-      /* Glow accent on easy panel */
-      .mac-window.md-win {
-        box-shadow:
-          var(--win-shadow),
-          0 0 60px -15px rgba(77, 184, 164, 0.15);
-      }
-
-      .mac-window.md-win::after {
-        content: "";
-        position: absolute;
-        top: -1px;
-        left: 20%;
-        right: 20%;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, var(--mint), transparent);
-        opacity: 0.5;
-        border-radius: 0 0 2px 2px;
-        z-index: 5;
-      }
-
-      pre {
+      .md-card pre {
         margin: 0;
-        padding: 0 20px;
-        width: 100%;
+        padding: 24px 28px 28px;
       }
 
-      code {
+      .md-card code {
         font-family: "JetBrains Mono", monospace;
-        font-size: 13px;
-        line-height: 1.7;
+        font-size: 15px;
+        line-height: 1.75;
         display: block;
         white-space: pre;
       }
 
-      /* Line numbers */
-      .ln {
+      .md-card .ln {
         display: inline-block;
-        width: 28px;
+        width: 24px;
         text-align: right;
-        margin-right: 16px;
-        color: #313244;
+        margin-right: 18px;
+        color: #1e3a2e;
         user-select: none;
-        font-size: 11.5px;
+        font-size: 12px;
       }
-
-      .mac-window.md-win .ln { color: #1e3a2e; }
-
-      /* ── Syntax classes ── */
-      .jk { color: var(--j-key); }
-      .js { color: var(--j-string); }
-      .jb { color: var(--j-bool); }
-      .jp { color: var(--j-punct); }
 
       .mh { color: var(--m-heading); font-weight: 700; }
       .mb { color: var(--m-bold); font-weight: 700; }
@@ -317,109 +299,74 @@
       .mt { color: var(--m-text); }
       .mq { color: var(--m-callout); opacity: 0.4; }
 
-      /* Cursor */
       .cursor {
         display: inline-block;
         width: 2px;
-        height: 16px;
+        height: 18px;
         background: var(--mint);
         margin-left: 2px;
         vertical-align: text-bottom;
         animation: blink 1s step-end infinite;
       }
 
-      /* ── Stats strip ── */
-      .stats {
-        display: flex;
-        gap: 14px;
-        margin-top: 36px;
-        opacity: 0;
-        animation: fadeUp 0.7s ease-out 0.7s forwards;
-      }
-
-      .stat-card {
-        flex: 1;
-        padding: 24px 16px;
+      /* ── Reduction callout below the card ── */
+      .reduction {
+        margin-top: 40px;
         text-align: center;
-        border-radius: 12px;
-        background: var(--win-bg);
-        border: 1px solid var(--win-border);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        animation: fadeUp 0.6s ease-out 1s forwards;
       }
 
-      .stat-label {
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: #585b70;
-        margin-bottom: 12px;
-      }
-
-      .stat-row {
-        display: flex;
-        align-items: baseline;
-        justify-content: center;
-        gap: 10px;
-      }
-
-      .stat-old {
+      .reduction .big {
         font-family: "JetBrains Mono", monospace;
-        font-size: 26px;
-        font-weight: 700;
-        color: var(--coral);
-        opacity: 0.75;
-        text-decoration: line-through;
-        text-decoration-thickness: 2px;
-        text-decoration-color: var(--coral-deep);
-      }
-
-      .stat-arrow {
-        font-size: 18px;
-        color: #585b70;
-      }
-
-      .stat-new {
-        font-family: "JetBrains Mono", monospace;
-        font-size: 34px;
-        font-weight: 700;
+        font-size: 72px;
+        font-weight: 800;
+        letter-spacing: -0.05em;
         color: var(--mint);
+        line-height: 1;
+        text-shadow: 0 0 60px rgba(77, 184, 164, 0.3);
       }
 
-      .stat-sub {
-        margin-top: 6px;
-        font-size: 12px;
+      .reduction .context {
+        font-size: 22px;
+        font-weight: 700;
         color: #585b70;
-        font-weight: 600;
+        margin-top: 6px;
+        letter-spacing: -0.01em;
       }
 
-      /* ── Footer ── */
+      /* ── Footer brand ── */
       .footer {
+        margin-top: 48px;
         text-align: center;
-        margin-top: 32px;
         opacity: 0;
-        animation: fadeUp 0.5s ease-out 1s forwards;
+        animation: fadeUp 0.5s ease-out 1.2s forwards;
       }
 
       .footer .brand {
         font-family: "JetBrains Mono", monospace;
-        font-size: 17px;
+        font-size: 20px;
         font-weight: 700;
         color: var(--mint);
         letter-spacing: -0.02em;
       }
 
       .footer .tagline {
-        font-size: 14px;
-        color: #585b70;
+        font-size: 15px;
+        color: #45475a;
         margin-top: 4px;
-        font-weight: 500;
+        font-weight: 600;
       }
 
       /* ── Animations ── */
       @keyframes fadeUp {
-        from { opacity: 0; transform: translateY(16px); }
+        from { opacity: 0; transform: translateY(18px); }
         to { opacity: 1; transform: translateY(0); }
+      }
+
+      @keyframes cardSlam {
+        from { opacity: 0; transform: scale(0.92) translateY(30px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
       }
 
       @keyframes blink {
@@ -429,78 +376,41 @@
     </style>
   </head>
   <body>
-    <div class="container">
-      <header class="header">
-        <div class="overline">creating the same notion page</div>
-        <h1>Same page.<br>Different <span class="accent">syntax.</span></h1>
-        <div class="versus">
-          <span class="left">notion-mcp-server</span>
-          <span class="vs-dot">vs</span>
-          <span class="right">easy-notion-mcp</span>
-        </div>
+    <!-- Layer 0: JSON wall background -->
+    <div class="json-wall">
+      <code id="bg-json"></code>
+    </div>
+    <div class="vignette"></div>
+    <div class="color-wash"></div>
+
+    <!-- Layer 2: Actual content -->
+    <div class="content">
+      <header class="headline">
+        <h1>Stop paying LLMs<br>to write <span class="highlight">Notion JSON.</span></h1>
+        <p class="sub"><em>notion-mcp-server</em> requires 67 lines of block objects per page.</p>
       </header>
 
-      <section class="panels">
-        <!-- Official: macOS window with JSON -->
-        <div class="mac-window json-win">
-          <div class="title-bar">
-            <div class="dots"><span class="d-r"></span><span class="d-y"></span><span class="d-g"></span></div>
-            <span class="filename">create_page.json</span>
-          </div>
-          <div class="token-count">
-            <span class="number">~450</span>
-            <span class="unit">tokens</span>
-          </div>
-          <div class="code-body">
-            <pre><code id="json-code"></code></pre>
-          </div>
-        </div>
+      <div class="waste-badge">
+        <span class="number">~450</span>
+        <span class="label">tokens wasted per call</span>
+      </div>
 
-        <!-- Easy: macOS window with markdown -->
-        <div class="mac-window md-win">
-          <div class="title-bar">
-            <div class="dots"><span class="d-r"></span><span class="d-y"></span><span class="d-g"></span></div>
-            <span class="filename">create_page</span>
-          </div>
-          <div class="token-count">
-            <span class="number">~40</span>
-            <span class="unit">tokens</span>
-          </div>
-          <div class="code-body">
-            <pre><code id="md-code"></code></pre>
-          </div>
+      <div class="md-card">
+        <div class="title-bar">
+          <div class="dots"><span class="d-r"></span><span class="d-y"></span><span class="d-g"></span></div>
+          <span class="filename">easy-notion-mcp</span>
         </div>
-      </section>
+        <div class="token-row">
+          <span class="number">~40</span>
+          <span class="label">tokens — same result</span>
+        </div>
+        <pre><code id="md-code"></code></pre>
+      </div>
 
-      <section class="stats">
-        <div class="stat-card">
-          <div class="stat-label">Lines</div>
-          <div class="stat-row">
-            <span class="stat-old" data-count="67">0</span>
-            <span class="stat-arrow">&rarr;</span>
-            <span class="stat-new" data-count="11">0</span>
-          </div>
-          <div class="stat-sub">84% fewer</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Tokens</div>
-          <div class="stat-row">
-            <span class="stat-old" data-count="450">0</span>
-            <span class="stat-arrow">&rarr;</span>
-            <span class="stat-new" data-count="40">0</span>
-          </div>
-          <div class="stat-sub">91% cheaper</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Block types</div>
-          <div class="stat-row">
-            <span class="stat-old" data-count="2">0</span>
-            <span class="stat-arrow">&rarr;</span>
-            <span class="stat-new" data-count="15">0</span>
-          </div>
-          <div class="stat-sub">in spec</div>
-        </div>
-      </section>
+      <div class="reduction">
+        <div class="big">91% cheaper</div>
+        <div class="context">same page, same blocks, fraction of the cost</div>
+      </div>
 
       <footer class="footer">
         <div class="brand">easy-notion-mcp</div>
@@ -516,11 +426,10 @@
         return '<span class="' + cls + '">' + esc(text) + "</span>";
       }
 
-      /* Single-pass JSON tokenizer */
+      /* JSON tokenizer */
       function highlightJSON(src) {
         var lines = src.split("\n"), out = [];
         for (var li = 0; li < lines.length; li++) {
-          var ln = '<span class="ln">' + (li + 1) + "</span>";
           var text = lines[li], html = "", idx = 0;
           while (idx < text.length) {
             var ch = text[idx];
@@ -540,6 +449,7 @@
             if ("{[}]:,".indexOf(ch) !== -1) { html += w("jp", ch); idx++; continue; }
             if (text.substr(idx, 4) === "true") { html += w("jb", "true"); idx += 4; continue; }
             if (text.substr(idx, 5) === "false") { html += w("jb", "false"); idx += 5; continue; }
+            if (text.substr(idx, 4) === "null") { html += w("jp", "null"); idx += 4; continue; }
             if ((ch >= "0" && ch <= "9") || ch === "-") {
               var num = "";
               while (idx < text.length && /[0-9eE+.\-]/.test(text[idx])) { num += text[idx]; idx++; }
@@ -547,7 +457,7 @@
             }
             html += esc(ch); idx++;
           }
-          out.push(ln + html);
+          out.push(html);
         }
         return out.join("\n");
       }
@@ -575,39 +485,46 @@
         return out.join("\n");
       }
 
-      /* Animated counters */
-      function animateCounters() {
-        document.querySelectorAll("[data-count]").forEach(function (el) {
-          var target = parseInt(el.getAttribute("data-count"), 10);
-          var start = performance.now();
-          (function tick(now) {
-            var p = Math.min((now - start) / 1200, 1);
-            var eased = 1 - Math.pow(1 - p, 3);
-            el.textContent = Math.round(target * eased);
-            if (p < 1) requestAnimationFrame(tick);
-          })(performance.now());
-        });
-      }
-
-      /* Source data */
-      var jsonSource = [
+      /* The full verbose JSON — repeats to fill the background */
+      var jsonBlock = [
         '{',
-        '  "parent": { "page_id": "abc123" },',
+        '  "parent": {',
+        '    "page_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"',
+        '  },',
         '  "properties": {',
-        '    "title": [{',
-        '      "text": { "content": "Project Update" }',
-        '    }]',
+        '    "title": [',
+        '      {',
+        '        "text": {',
+        '          "content": "Project Update"',
+        '        }',
+        '      }',
+        '    ]',
         '  },',
         '  "children": [',
         '    {',
         '      "type": "heading_2",',
         '      "heading_2": {',
-        '        "rich_text": [{',
-        '          "type": "text",',
-        '          "text": {',
-        '            "content": "Status"',
+        '        "rich_text": [',
+        '          {',
+        '            "type": "text",',
+        '            "text": {',
+        '              "content": "Status",',
+        '              "link": null',
+        '            },',
+        '            "annotations": {',
+        '              "bold": false,',
+        '              "italic": false,',
+        '              "strikethrough": false,',
+        '              "underline": false,',
+        '              "code": false,',
+        '              "color": "default"',
+        '            },',
+        '            "plain_text": "Status",',
+        '            "href": null',
         '          }',
-        '        }]',
+        '        ],',
+        '        "is_toggleable": false,',
+        '        "color": "default"',
         '      }',
         '    },',
         '    {',
@@ -617,78 +534,137 @@
         '          {',
         '            "type": "text",',
         '            "text": {',
-        '              "content": "The project is "',
-        '            }',
-        '          },',
-        '          {',
-        '            "type": "text",',
-        '            "text": {',
-        '              "content": "on track"',
+        '              "content": "The project is ",',
+        '              "link": null',
         '            },',
         '            "annotations": {',
-        '              "bold": true',
-        '            }',
+        '              "bold": false,',
+        '              "italic": false,',
+        '              "strikethrough": false,',
+        '              "underline": false,',
+        '              "code": false,',
+        '              "color": "default"',
+        '            },',
+        '            "plain_text": "The project is ",',
+        '            "href": null',
         '          },',
         '          {',
         '            "type": "text",',
         '            "text": {',
-        '              "content": " for launch."',
+        '              "content": "on track",',
+        '              "link": null',
+        '            },',
+        '            "annotations": {',
+        '              "bold": true,',
+        '              "italic": false,',
+        '              "strikethrough": false,',
+        '              "underline": false,',
+        '              "code": false,',
+        '              "color": "default"',
+        '            },',
+        '            "plain_text": "on track",',
+        '            "href": null',
+        '          },',
+        '          {',
+        '            "type": "text",',
+        '            "text": {',
+        '              "content": " for launch.",',
+        '              "link": null',
+        '            },',
+        '            "annotations": {',
+        '              "bold": false,',
+        '              "italic": false,',
+        '              "strikethrough": false,',
+        '              "underline": false,',
+        '              "code": false,',
+        '              "color": "default"',
+        '            },',
+        '            "plain_text": " for launch.",',
+        '            "href": null',
+        '          }',
+        '        ],',
+        '        "color": "default"',
+        '      }',
+        '    },',
+        '    {',
+        '      "type": "bulleted_list_item",',
+        '      "bulleted_list_item": {',
+        '        "rich_text": [',
+        '          {',
+        '            "type": "text",',
+        '            "text": {',
+        '              "content": "Backend API complete",',
+        '              "link": null',
+        '            },',
+        '            "annotations": {',
+        '              "bold": false,',
+        '              "italic": false,',
+        '              "strikethrough": false,',
+        '              "underline": false,',
+        '              "code": false,',
+        '              "color": "default"',
         '            }',
         '          }',
-        '        ]',
+        '        ],',
+        '        "color": "default"',
         '      }',
         '    },',
         '    {',
         '      "type": "bulleted_list_item",',
         '      "bulleted_list_item": {',
-        '        "rich_text": [{',
-        '          "type": "text",',
-        '          "text": {',
-        '            "content": "Backend API complete"',
+        '        "rich_text": [',
+        '          {',
+        '            "type": "text",',
+        '            "text": {',
+        '              "content": "Frontend in review",',
+        '              "link": null',
+        '            },',
+        '            "annotations": {',
+        '              "bold": false,',
+        '              "italic": false,',
+        '              "strikethrough": false,',
+        '              "underline": false,',
+        '              "code": false,',
+        '              "color": "default"',
+        '            }',
         '          }',
-        '        }]',
-        '      }',
-        '    },',
-        '    {',
-        '      "type": "bulleted_list_item",',
-        '      "bulleted_list_item": {',
-        '        "rich_text": [{',
-        '          "type": "text",',
-        '          "text": {',
-        '            "content": "Frontend in review"',
-        '          }',
-        '        }]',
-        '      }',
-        '    },',
-        '    {',
-        '      "type": "bulleted_list_item",',
-        '      "bulleted_list_item": {',
-        '        "rich_text": [{',
-        '          "type": "text",',
-        '          "text": {',
-        '            "content": "Tests passing"',
-        '          }',
-        '        }]',
+        '        ],',
+        '        "color": "default"',
         '      }',
         '    },',
         '    {',
         '      "type": "callout",',
         '      "callout": {',
-        '        "rich_text": [{',
-        '          "type": "text",',
-        '          "text": {',
-        '            "content": "Ship date: Friday"',
+        '        "rich_text": [',
+        '          {',
+        '            "type": "text",',
+        '            "text": {',
+        '              "content": "Ship date: Friday",',
+        '              "link": null',
+        '            },',
+        '            "annotations": {',
+        '              "bold": false,',
+        '              "italic": false,',
+        '              "strikethrough": false,',
+        '              "underline": false,',
+        '              "code": false,',
+        '              "color": "default"',
+        '            }',
         '          }',
-        '        }],',
+        '        ],',
         '        "icon": {',
         '          "type": "emoji",',
         '          "emoji": "\uD83D\uDE80"',
-        '        }',
+        '        },',
+        '        "color": "blue_background"',
         '      }',
         '    }',
         '  ]',
         '}'
       ].join("\n");
+
+      // Repeat JSON to fill the viewport
+      var fullBg = jsonBlock + "\n\n" + jsonBlock + "\n\n" + jsonBlock;
 
       var mdSource = [
         '## Status',
@@ -704,10 +680,9 @@
       ].join("\n");
 
       document.addEventListener("DOMContentLoaded", function () {
-        document.getElementById("json-code").innerHTML = highlightJSON(jsonSource);
+        document.getElementById("bg-json").innerHTML = highlightJSON(fullBg);
         document.getElementById("md-code").innerHTML =
           highlightMD(mdSource) + '<span class="cursor"></span>';
-        setTimeout(animateCounters, 1400);
       });
     </script>
   </body>
