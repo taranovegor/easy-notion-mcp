@@ -72,8 +72,10 @@ function simplifyProperty(prop: any): unknown {
     case "unique_id":
       if (!prop.unique_id) return null;
       return prop.unique_id.prefix
-        ? `${prop.unique_id.prefix}-${prop.unique_id.number}`
-        : String(prop.unique_id.number);
+          ? `${prop.unique_id.prefix}-${prop.unique_id.number}`
+          : String(prop.unique_id.number);
+    case "relation":
+      return prop.relation?.map((r: any) => r.id) ?? [];
     default:
       return null;
   }
